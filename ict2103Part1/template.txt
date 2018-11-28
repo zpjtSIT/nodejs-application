@@ -1,0 +1,148 @@
+// Get all Location
+router.get('/', function (req, res) {
+    if (req.get("token") == null || req.get("token") == "") {
+        res.statusCode = 200;
+        return res.json({
+            respond: "Invalid Token Key",
+            errors: true
+        });
+    } else {
+        var token = req.get("token");
+        common.checksession(db, token, function (returnValue) {
+            if (returnValue) {
+
+            } else {
+                res.statusCode = 200
+                return res.json({
+                    respond: "Invalid session",
+                    errors: true
+                });
+            }
+        });
+    }
+});
+
+
+// TO BE DELETE
+
+var express = require('express');
+var router = express.Router();
+var db = require('./connection.js'); // db is pool
+var common = require('./common.js');
+var multer = require('multer');
+var fs = require("fs");
+
+var Storage = multer.diskStorage({
+  destination: function(req, file, callback) {
+    callback(null, "public/image/fault/");
+  },
+  filename: function(req, file, callback) {
+    callback(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
+  }
+});
+
+var upload = multer({
+  storage: Storage
+}).array("faultimage", 3); //Field name and max count
+
+
+
+
+router.post('/', function(req, res) {
+
+  if (req.get("token") == null || req.get("token") == "") {
+    res.statusCode = 200;
+    return res.json({
+      respond: "Invalid Token Key",
+      errors: true
+    });
+  } else {
+    var imageurl = "";
+    var token = req.get("token");
+    common.checksession(db, token, function(returnValue) {
+      if (returnValue) {
+        upload(req, res, function(err) {
+          if ((req.files).length > 0) {
+            imageurl = (req.files[0].path).slice(6);
+          }
+          common.getstudentid(db, token, function(returnValue) {
+            if (returnValue > 0) {
+              var paremeters = {
+                fault_reporting_image: imageurl,
+                school_room_ID: req.body.schoolroom,
+                fault_reporting_description: req.body.description,
+                student_ID: returnValue,
+              };
+              var query = db.query('INSERT INTO fault_reporting SET ?', paremeters, function(err, result) {
+                if (err) {
+                  res.statusCode = 200
+                  return res.json({
+                    respond: "Database ran into problem",
+                    errors: true
+                  });
+                } else {
+                  if (result) {
+                    return res.json({
+                      respond: "Successfully Log a Fault report",
+                      errors: false
+                    });
+                  } else {
+                    res.statusCode = 200
+                    return res.json({
+                      respond: "Log a fault report failed",
+                      errors: true
+                    });
+                  }
+                }
+              });
+            } else {
+              res.statusCode = 200
+              return res.json({
+                respond: "Invalid session",
+                errors: true
+              });
+            }
+          });
+        });
+      } else {
+        res.statusCode = 200
+        return res.json({
+          respond: "Invalid session",
+          errors: true
+        });
+      }
+    });
+  }
+});
+
+//Simpler version
+router.post('/', function(req, res) {
+
+  if (req.get("token") == null || req.get("token") == "") {
+    res.statusCode = 200;
+    return res.json({
+      respond: "Invalid Token Key",
+      errors: true
+    });
+  } else {
+    var imageurl = "";
+    var token = req.get("token");
+    common.checksession(db, token, function(returnValue) {
+      if (returnValue) {
+        upload(req, res, function(err) {
+          if (err) {
+            return res.end("Something went wrong!");
+          }
+           console.log(req);
+          res.send("ccb");
+        });
+      } else {
+        res.statusCode = 200
+        return res.json({
+          respond: "Invalid session",
+          errors: true
+        });
+      }
+    });
+  }
+});

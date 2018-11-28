@@ -1,0 +1,310 @@
+-- ****************** SqlDBM: MySQL ******************;
+-- ***************************************************;
+
+SET foreign_key_checks = 0;
+DROP TABLE IF EXISTS `clinic`;
+DROP TABLE IF EXISTS `course`;
+DROP TABLE IF EXISTS `department`;
+DROP TABLE IF EXISTS `location`;
+DROP TABLE IF EXISTS `secure_login`;
+DROP TABLE IF EXISTS `admin`;
+DROP TABLE IF EXISTS `school_room`;
+DROP TABLE IF EXISTS `student`;
+DROP TABLE IF EXISTS `fault_reporting`;
+DROP TABLE IF EXISTS `lost_found`;
+DROP TABLE IF EXISTS `library_borrow`;
+DROP TABLE IF EXISTS `event`;
+DROP TABLE IF EXISTS `join_event`;
+-- ************************************** `clinic`
+
+CREATE TABLE `clinic`
+(
+ `S_N`             INT NOT NULL ,
+ `ZONE`            VARCHAR(45) ,
+ `ESTATE`          VARCHAR(255) ,
+ `CLINIC_NAME`     VARCHAR(45) ,
+ `BLK`             VARCHAR(255) ,
+ `ROAD_NAME`       VARCHAR(45) ,
+ `UNIT_NO`         VARCHAR(255) ,
+ `BUILDING_NAME`   INT ,
+ `POSTAL_CODE`     INT ,
+ `LONG`            FLOAT ,
+ `LAT`             FLOAT ,
+ `PHONE`           VARCHAR(45) ,
+ `FAX`             VARCHAR(45) ,
+ `WEEKDAY`         VARCHAR(255) ,
+ `SAT`             VARCHAR(255) ,
+ `SUN`             VARCHAR(255) ,
+ `PUBLIC_HOLIDAYS` VARCHAR(255) ,
+ `CLINIC_REMARKS`  VARCHAR(255) ,
+
+PRIMARY KEY (`S_N`)
+);
+
+
+
+
+
+
+-- ************************************** `course`
+
+CREATE TABLE `course`
+(
+ `course_ID`          INT NOT NULL ,
+ `course_name`        VARCHAR(100) NOT NULL ,
+ `course_description` TEXT ,
+
+PRIMARY KEY (`course_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `department`
+
+CREATE TABLE `department`
+(
+ `department_ID`          INT NOT NULL ,
+ `department_name`        VARCHAR(100) NOT NULL ,
+ `department_description` TEXT ,
+
+PRIMARY KEY (`department_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `location`
+
+CREATE TABLE `location`
+(
+ `location_ID`          INT NOT NULL AUTO_INCREMENT ,
+ `location_name`        VARCHAR(100) NOT NULL ,
+ `location_address`     VARCHAR(100) NOT NULL ,
+ `location_lat`         VARCHAR(20) ,
+ `location_long`        VARCHAR(20) ,
+ `location_description` TEXT ,
+ `location_opening`     VARCHAR(255) ,
+
+PRIMARY KEY (`location_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `secure_login`
+
+CREATE TABLE `secure_login`
+(
+ `secure_login_ID`            INT NOT NULL AUTO_INCREMENT ,
+ `secure_login_email`         VARCHAR(255) NOT NULL ,
+ `secure_login_password`      VARCHAR(100) NOT NULL ,
+ `secure_login_session_token` VARCHAR(100) ,
+ `secure_login_created`       TIMESTAMP NOT NULL ,
+ `secure_login_lastlogin`     DATETIME ,
+ `secure_login_admin`         INT NOT NULL DEFAULT 0 ,
+ `secure_login_phone_token`   VARCHAR(100) ,
+
+PRIMARY KEY (`secure_login_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `admin`
+
+CREATE TABLE `admin`
+(
+ `admin_ID`        INT NOT NULL ,
+ `admin_name`      VARCHAR(45) NOT NULL ,
+ `admin_matrics`   VARCHAR(45) NOT NULL ,
+ `admin_phone`     VARCHAR(45) NOT NULL ,
+ `admin_dob`       DATE NOT NULL ,
+ `admin_address`   VARCHAR(100) NOT NULL ,
+ `admin_image`     VARCHAR(100) ,
+ `secure_login_ID` INT NOT NULL ,
+ `department_ID`   INT NOT NULL ,
+
+PRIMARY KEY (`admin_ID`),
+KEY `fkIdx_176` (`secure_login_ID`),
+CONSTRAINT `FK_176` FOREIGN KEY `fkIdx_176` (`secure_login_ID`) REFERENCES `secure_login` (`secure_login_ID`),
+KEY `fkIdx_184` (`department_ID`),
+CONSTRAINT `FK_184` FOREIGN KEY `fkIdx_184` (`department_ID`) REFERENCES `department` (`department_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `school_room`
+
+CREATE TABLE `school_room`
+(
+ `school_room_ID`          INT NOT NULL AUTO_INCREMENT ,
+ `school_room_name`        VARCHAR(45) NOT NULL ,
+ `school_room_size`        INT NOT NULL ,
+ `school_room_description` TEXT ,
+ `location_ID`             INT NOT NULL ,
+
+PRIMARY KEY (`school_room_ID`),
+KEY `fkIdx_62` (`location_ID`),
+CONSTRAINT `FK_62` FOREIGN KEY `fkIdx_62` (`location_ID`) REFERENCES `location` (`location_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `student`
+
+CREATE TABLE `student`
+(
+ `student_ID`      INT NOT NULL AUTO_INCREMENT ,
+ `student_name`    VARCHAR(45) NOT NULL ,
+ `student_matrics` VARCHAR(10) NOT NULL ,
+ `student_phone`   VARCHAR(50) NOT NULL ,
+ `student_dob`     DATE NOT NULL ,
+ `student_address` VARCHAR(100) NOT NULL ,
+ `student_image`   VARCHAR(100) ,
+ `secure_login_ID` INT NOT NULL ,
+ `course_ID`       INT NOT NULL ,
+
+PRIMARY KEY (`student_ID`),
+KEY `fkIdx_30` (`secure_login_ID`),
+CONSTRAINT `FK_30` FOREIGN KEY `fkIdx_30` (`secure_login_ID`) REFERENCES `secure_login` (`secure_login_ID`),
+KEY `fkIdx_192` (`course_ID`),
+CONSTRAINT `FK_192` FOREIGN KEY `fkIdx_192` (`course_ID`) REFERENCES `course` (`course_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `fault_reporting`
+
+CREATE TABLE `fault_reporting`
+(
+ `fault_reporting_ID`          INT NOT NULL AUTO_INCREMENT ,
+ `fault_reporting_date`        TIMESTAMP NOT NULL ,
+ `fault_reporting_image`       VARCHAR(100) ,
+ `fault_reporting_title`       VARCHAR(45) NOT NULL ,
+ `school_room_ID`              INT NOT NULL ,
+ `fault_reporting_description` TEXT ,
+ `fault_reporting_fixed`       INT NOT NULL DEFAULT 0 ,
+ `student_ID`                  INT NOT NULL ,
+
+PRIMARY KEY (`fault_reporting_ID`),
+KEY `fkIdx_113` (`school_room_ID`),
+CONSTRAINT `FK_113` FOREIGN KEY `fkIdx_113` (`school_room_ID`) REFERENCES `school_room` (`school_room_ID`),
+KEY `fkIdx_120` (`student_ID`),
+CONSTRAINT `FK_120` FOREIGN KEY `fkIdx_120` (`student_ID`) REFERENCES `student` (`student_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `lost_found`
+
+CREATE TABLE `lost_found`
+(
+ `lost_found_ID`          INT NOT NULL AUTO_INCREMENT ,
+ `lost_found_date`        DATE NOT NULL ,
+ `lost_found_category`    VARCHAR(45) NOT NULL ,
+ `lost_found_image`       VARCHAR(45) ,
+ `school_room_ID`         INT NOT NULL ,
+ `lost_found_created`     TIMESTAMP NOT NULL ,
+ `lost_found_claim_by`    VARCHAR(45) ,
+ `lost_found_claim_date`  DATETIME ,
+ `lost_found_description` TEXT ,
+ `student_ID`             INT NOT NULL ,
+
+PRIMARY KEY (`lost_found_ID`),
+KEY `fkIdx_100` (`school_room_ID`),
+CONSTRAINT `FK_100` FOREIGN KEY `fkIdx_100` (`school_room_ID`) REFERENCES `school_room` (`school_room_ID`),
+KEY `fkIdx_123` (`student_ID`),
+CONSTRAINT `FK_123` FOREIGN KEY `fkIdx_123` (`student_ID`) REFERENCES `student` (`student_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `library_borrow`
+
+CREATE TABLE `library_borrow`
+(
+ `library_borrow_ID`   INT NOT NULL AUTO_INCREMENT ,
+ `library_borrow_date` DATETIME NOT NULL ,
+ `student_ID`          INT NOT NULL ,
+ `library_return_date` DATETIME NOT NULL ,
+ `BID`                 VARCHAR(255) NOT NULL ,
+ `ISBN`                VARCHAR(255) NOT NULL ,
+
+PRIMARY KEY (`library_borrow_ID`),
+KEY `fkIdx_80` (`student_ID`),
+CONSTRAINT `FK_80` FOREIGN KEY `fkIdx_80` (`student_ID`) REFERENCES `student` (`student_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `event`
+
+CREATE TABLE `event`
+(
+ `event_ID`          INT NOT NULL AUTO_INCREMENT ,
+ `event_name`        VARCHAR(45) NOT NULL ,
+ `event_description` TEXT ,
+ `event_start_time`  DATETIME NOT NULL ,
+ `event_end_time`    DATETIME NOT NULL ,
+ `event_image`       VARCHAR(100) ,
+ `school_room_ID`    INT NOT NULL ,
+ `event_url`         VARCHAR(100) ,
+ `event_created_by`  VARCHAR(45) NOT NULL ,
+
+PRIMARY KEY (`event_ID`),
+KEY `fkIdx_65` (`school_room_ID`),
+CONSTRAINT `FK_65` FOREIGN KEY `fkIdx_65` (`school_room_ID`) REFERENCES `school_room` (`school_room_ID`)
+);
+
+
+
+
+
+
+-- ************************************** `join_event`
+
+CREATE TABLE `join_event`
+(
+ `join_event_ID` INT NOT NULL ,
+ `student_ID`    INT NOT NULL ,
+ `event_ID`      INT NOT NULL ,
+ `time_stamp`    TIMESTAMP NOT NULL ,
+
+PRIMARY KEY (`join_event_ID`),
+KEY `fkIdx_159` (`student_ID`),
+CONSTRAINT `FK_159` FOREIGN KEY `fkIdx_159` (`student_ID`) REFERENCES `student` (`student_ID`),
+KEY `fkIdx_162` (`event_ID`),
+CONSTRAINT `FK_162` FOREIGN KEY `fkIdx_162` (`event_ID`) REFERENCES `event` (`event_ID`)
+);
+
+
+
+
+
